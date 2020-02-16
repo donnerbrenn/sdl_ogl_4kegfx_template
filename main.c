@@ -19,7 +19,6 @@ void _start()
 {
     asm ("sub $8, %rsp\n");
     SDL_Event event;
-
     SDL_Init(SDL_INIT_EVERYTHING);
     SDL_Window *window=SDL_CreateWindow(NULL,0,0,WIDTH,HEIGHT,SDL_WINDOW_OPENGL);
     SDL_GL_CreateContext(window);
@@ -76,7 +75,7 @@ void _start()
     }
 	#endif
 
-    while(1)
+    for(;;)
     {
         while(SDL_PollEvent(&event))
         {
