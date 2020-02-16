@@ -1,9 +1,9 @@
-CC = cc
+CC = cc-8
 
 SHADERPATH=shaders
-SHADER=stars.frag
+SHADER=rhodium.frag
 
-LIBS=-lSDL2 -lGL
+LIBS=-lSDL2 -lGL #-lc
 
 CFLAGS = -Os -s -march=nocona -fverbose-asm
 CFLAGS+= -fno-plt
