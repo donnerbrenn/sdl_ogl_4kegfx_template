@@ -1,6 +1,7 @@
-uniform float runtime;
-float iTime=(runtime*.001);
+uniform int runtime;
+float iTime=runtime*.001;
 vec2 iResolution=vec2(1920,1080);
+
 
 float tunnel(vec3 p)
 {
