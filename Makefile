@@ -1,7 +1,7 @@
 CC = cc-8
 
 SHADERPATH=shaders
-SHADER=rhodium.frag
+SHADER=ribbon.frag
 
 LIBS=-lSDL2 -lGL #-lc
 
@@ -68,7 +68,7 @@ shader.h: $(SHADERPATH)/$(SHADER)
 main.S: main.c shader.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -S $< -o $@
 	grep -v 'GCC:\|note.GNU-stack' $@ > $@.temp
-	rm shader.h
+	# rm shader.h
 	mv $@.temp $@
 
 main.o: main.S
@@ -94,7 +94,7 @@ main.stripped: main.elf
 
 main.xz: main.stripped
 	python3 ./tools/opt_lzma.py $< -o $@
-	rm $^
+	# rm $^
 
 vondehi.elf: vondehi/vondehi.asm
 	nasm -fbin  -DNO_CHEATING -DNO_UBUNTU_COMPAT -o $@ $<
@@ -105,7 +105,14 @@ main: vondehi.elf main.xz
 	rm $^
 	wc -c $@
 
-all: main
+main.cmix: main.stripped
+	cmix -c $< $@.cm
+	cat cmix/cmixdropper.sh $@.cm > $@
+	rm $@.cm
+	chmod +x $@
+	wc -c $@
+
+all: main #main.cmix
 
 clean: 
 	-rm -f main.o main.S main.elf main.stripped main.xz vondehi.elf shader.h

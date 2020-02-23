@@ -79,7 +79,7 @@ void _start()
     {
         while(SDL_PollEvent(&event))
         {
-            if((event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE))
+            if((event.type == SDL_KEYDOWN))
             {
                 asm volatile(".intel_syntax noprefix;push 231;pop rax;xor edi, edi;syscall;.att_syntax prefix");
             }
