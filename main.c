@@ -1,28 +1,48 @@
+#define GL_GLEXT_PROTOTYPES
+
 #include <SDL2/SDL.h>
-#include <stdint.h>
 #include "shader.h"
 #include <GL/gl.h>
 
-#define WIDTH 1920
-#define HEIGHT 1080
+#define WIDTH 2560
+#define HEIGHT 1440
 // #define DEBUG
-#define RUNTIME
+// #define RUNTIME
+// #define DESPERATE
 
-static void draw(SDL_Window *window, GLint runtimePOS)
+static void draw(SDL_Window *window, GLint *runtimePOS)
 {
-        glUniform1i(runtimePOS,SDL_GetTicks());
-        glRecti(-1,-1,1,1);
-        SDL_GL_SwapWindow(window);
+	GLfloat runtime[3]={SDL_GetTicks()*.001f,WIDTH,HEIGHT};
+	glUniform1fv(*runtimePOS,3,&runtime);
+	glRecti(-1,-1,1,1);
+	SDL_GL_SwapWindow(window);
 }
 
-void _start()
+static void handleEvents()
 {
-    asm ("sub $8, %rsp\n");
-    SDL_Event event;
-    SDL_Init(SDL_INIT_EVERYTHING);
-    SDL_Window *window=SDL_CreateWindow(NULL,0,0,WIDTH,HEIGHT,SDL_WINDOW_OPENGL);
-    SDL_GL_CreateContext(window);
-    const GLuint f = glCreateShader(GL_FRAGMENT_SHADER);
+	SDL_Event event;
+	do
+	{
+		if((event.type == SDL_KEYDOWN))
+		{
+			#ifdef DESPERATE
+			asm volatile("int3");
+			#else
+			asm volatile("push $231;pop %rax;syscall");
+			#endif
+			
+		}
+	} while(SDL_PollEvent(&event));
+}
+
+extern void _start()
+{
+	asm ("sub $8, %rsp\n");
+	// static GLuint pf[2];
+	SDL_Init(SDL_INIT_EVERYTHING);
+	const SDL_Window *window=SDL_CreateWindow(NULL,0,0,WIDTH,HEIGHT,SDL_WINDOW_OPENGL);
+	SDL_GL_CreateContext(window);
+	const GLuint f = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(f, 1, &shader_frag, NULL);
 	glCompileShader(f);
 
@@ -75,17 +95,11 @@ void _start()
     }
 	#endif
 
-    for(;;)
-    {
-        while(SDL_PollEvent(&event))
-        {
-            if((event.type == SDL_KEYDOWN))
-            {
-                asm volatile(".intel_syntax noprefix;push 231;pop rax;xor edi, edi;syscall;.att_syntax prefix");
-            }
-        }
+	for(;;)
+	{
+		handleEvents();
 		#ifdef RUNTIME
-        draw(window,runtimePOS);
+		draw(window,&runtimePOS);
 		#else
 		draw(window,0);
 		#endif

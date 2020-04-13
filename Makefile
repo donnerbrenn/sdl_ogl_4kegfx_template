@@ -3,9 +3,12 @@ CC = cc-8
 SHADERPATH=shaders
 SHADER=ribbon.frag
 
-LIBS=-lSDL2 -lGL #-lc
+LIBS=-lSDL2 -lGL 
 
-CFLAGS = -Os -s -march=nocona -fverbose-asm
+CFLAGS=
+# CFLAGS+= -lc -DDEBUG
+CFLAGS+= -DRUNTIME
+CFLAGS+= -Os -s -march=nocona -fverbose-asm 
 CFLAGS+= -fno-plt
 CFLAGS+= -fno-stack-protector -fno-stack-check
 CFLAGS+= -fno-unwind-tables -fno-asynchronous-unwind-tables -fno-exceptions
@@ -33,30 +36,11 @@ LDFLAGS+=-no-pie -fno-pic
 LDFLAGS+=-Wl,--whole-archive
 LDFLAGS+=-Wl,--print-gc-sections
 LDFLAGS+=-Wl,--spare-dynamic-tags=6
-LDFLAGS+=-Wl,-flto 
+# LDFLAGS+=-Wl,-flto 
 LDFLAGS+=-Wl,-z,nodynamic-undefined-weak
 LDFLAGS+=-Wl,-z,noseparate-code 
-# LDFLAGS+=-fuse-ld=gold
+LDFLAGS+=-Wl,--spare-dynamic-tags=4 -T linker.ld
 
-STRIP=-R .gnu.hash
-STRIP+=-R .comment
-STRIP+=-R .note.GNU-stack
-# STRIP+=-R .data
-STRIP+=-R .note.gnu.gold-version
-STRIP+=-R .note
-STRIP+=-R .note.ABI-tag
-STRIP+=-R .shstrtab
-STRIP+=-R .eh_frame
-STRIP+=-R .eh_frame_hdr
-STRIP+=-R .got
-STRIP+=-R .got.plt
-STRIP+=-R .bss
-STRIP+=-R .shstrtab  
-STRIP+=-R .init
-STRIP+=-R .fini
-STRIP+=-R .hash
-STRIP+=-R .init_array 
-STRIP+=-R .fini_array 
 
 default: all
 
@@ -68,7 +52,6 @@ shader.h: $(SHADERPATH)/$(SHADER)
 main.S: main.c shader.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -S $< -o $@
 	grep -v 'GCC:\|note.GNU-stack' $@ > $@.temp
-	# rm shader.h
 	mv $@.temp $@
 
 main.o: main.S
@@ -81,14 +64,10 @@ main.elf: main.o
 	wc -c $@
 
 main.stripped: main.elf
-	sed -i 's/_edata/\x00\x00\x00\x00\x00\x00/g' $<;
-	sed -i 's/__bss_start/\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00/g' $<;
-	sed -i 's/_end/\x00\x00\x00\x00/g' $<;
-	sed -i 's/GLIBC_2\.2\.5/\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00/g' $<;
-	strip $(STRIP) $<
+	strip -R .crap $<
 	readelf -S $<
 	./tools/noelfver $< > $@
-	sstrip -z $@
+	./tools/Section-Header-Stripper/section-stripper.py $@
 	rm $^
 	wc -c $@
 
@@ -99,10 +78,12 @@ main.xz: main.stripped
 vondehi.elf: vondehi/vondehi.asm
 	nasm -fbin  -DNO_CHEATING -DNO_UBUNTU_COMPAT -o $@ $<
 
-main: vondehi.elf main.xz
-	cat $^ > $@
+VNDH_FLAGS :=-l -v --vndh vondehi --vndh_unibin
+main: main.stripped
+	./autovndh.py $(VNDH_FLAGS) "$<" > "$@"
+	# ./tools/nicer.py $< -o $<.lzma
+	# ./tools/LZMA-Vizualizer/LzmaSpec $<.lzma
 	chmod +x $@
-	rm $^
 	wc -c $@
 
 main.cmix: main.stripped

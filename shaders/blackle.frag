@@ -1,3 +1,5 @@
+uniform float runtime[3];
+
 void main()
 {
     // Normalized pixel coordinates (from -1 to 1)

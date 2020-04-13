@@ -1,7 +1,6 @@
 float bounce;
-uniform int runtime;
-float time;
-vec2 res=vec2(1920,1080);
+uniform float runtime[3];
+vec2 res=vec2(runtime[1],runtime[2]);
 
 // signed box
 float sdBox(vec3 p,vec3 b)
@@ -34,7 +33,7 @@ float map(vec3 p)
 	p.z-=1.0;
     p*=0.9;
     pR(p.yz,bounce*1.+0.4*p.x);
-    return sdBox(p+vec3(0,sin(1.6*time),0),vec3(20.0, 0.05, 1.2))-.4*noise(8.*p+3.*bounce);
+    return sdBox(p+vec3(0,sin(1.6*runtime[0]),0),vec3(20.0, 0.05, 1.2))-.4*noise(8.*p+3.*bounce);
 }
 
 //	normal calculation
@@ -96,14 +95,14 @@ float softshadow(vec3 ro,vec3 rd)
 
 //	main function
 void main()
-{   time=runtime*.001;
-    bounce=abs(fract(0.05*time)-.5)*20.; // triangle function
+{
+    bounce=abs(fract(0.05*runtime[0])-.5)*20.; // triangle function
     
 	vec2 uv=gl_FragCoord.xy/res.xy; 
     vec2 p=uv*2.-1.;
    
 // 	bouncy cam every 10 seconds
-    float wobble=(fract(.1*(time-1.))>=0.9)?fract(-time)*0.1*sin(30.*time):0.;
+    float wobble=(fract(.1*(runtime[0]-1.))>=0.9)?fract(-runtime[0])*0.1*sin(30.*runtime[0]):0.;
     
 //  camera    
     vec3 dir = normalize(vec3(2.*gl_FragCoord.xy -res.xy, res.y));
@@ -139,7 +138,7 @@ void main()
     float T = 1.;
 
 //	animation of glow intensity    
-    float intensity = 0.1*-sin(.209*time+1.)+0.05; 
+    float intensity = 0.1*-sin(.209*runtime[0]+1.)+0.05; 
 	for(int i=0; i<128; i++)
 	{
         float density = 0.; float nebula = noise(org+bounce);
@@ -156,7 +155,7 @@ void main()
     T=clamp(T,0.,1.5); 
     color += basecol* exp(4.*(0.5-T) - 0.8);
     color2*=depth;
-    color2+= (1.-depth)*noise(6.*dir+0.3*time)*.1;	// subtle mist
+    color2+= (1.-depth)*noise(6.*dir+0.3*runtime[0])*.1;	// subtle mist
 
     
 //	scene depth included in alpha channel
