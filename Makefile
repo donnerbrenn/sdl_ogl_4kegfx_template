@@ -1,13 +1,14 @@
 CC = cc-8
 
 SHADERPATH=shaders
-SHADER=ribbon.frag
+SHADER=flopine.frag
 
-LIBS=-lSDL2 -lGL 
+LIBS=-lSDL2 -lGL #-lc
+
+DEBUG=0
 
 CFLAGS=
-# CFLAGS+= -lc -DDEBUG
-CFLAGS+= -DRUNTIME
+CFLAGS+= -DRUNTIME #-DDESPERATE
 CFLAGS+= -Os -s -march=nocona -fverbose-asm 
 CFLAGS+= -fno-plt
 CFLAGS+= -fno-stack-protector -fno-stack-check
@@ -39,14 +40,19 @@ LDFLAGS+=-Wl,--spare-dynamic-tags=6
 # LDFLAGS+=-Wl,-flto 
 LDFLAGS+=-Wl,-z,nodynamic-undefined-weak
 LDFLAGS+=-Wl,-z,noseparate-code 
-LDFLAGS+=-Wl,--spare-dynamic-tags=4 -T linker.ld
+LDFLAGS+=-Wl,--spare-dynamic-tags=4 
+
+# Activate Debug mode here
+# CFLAGS+= -lc -DDEBUG
+LDFLAGS+=-T linker.ld
+
 
 
 default: all
 
 shader.h: $(SHADERPATH)/$(SHADER)
 	cp $< shader.frag
-	mono ./tools/shader_minifier.exe shader.frag -o $@ #--smoothstep
+	mono ./tools/shader_minifier.exe shader.frag -o $@  #--smoothstep
 	rm shader.frag
 
 main.S: main.c shader.h
@@ -96,4 +102,4 @@ main.cmix: main.stripped
 all: main #main.cmix
 
 clean: 
-	-rm -f main.o main.S main.elf main.stripped main.xz vondehi.elf shader.h
+	-rm -f main.o main.S main.elf main.stripped main.xz vondehi.elf #shader.h

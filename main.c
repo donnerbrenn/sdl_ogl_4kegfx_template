@@ -1,10 +1,11 @@
 #define GL_GLEXT_PROTOTYPES
 
 #include <SDL2/SDL.h>
-#include "shader.h"
 #include <GL/gl.h>
+#include "shader.h"
 
-#define WIDTH 2560
+
+#define WIDTH 2560	
 #define HEIGHT 1440
 // #define DEBUG
 // #define RUNTIME
@@ -18,19 +19,19 @@ static void draw(SDL_Window *window, GLint *runtimePOS)
 	SDL_GL_SwapWindow(window);
 }
 
-static void handleEvents()
+static void handleEvents(SDL_Window *window)
 {
 	SDL_Event event;
 	do
 	{
 		if((event.type == SDL_KEYDOWN))
 		{
-			#ifdef DESPERATE
-			asm volatile("int3");
-			#else
-			asm volatile("push $231;pop %rax;syscall");
+			#ifdef DEBUG
+			SDL_DestroyWindow(window);
+			SDL_Quit();
 			#endif
-			
+			asm volatile("push $231;pop %rax;syscall");
+
 		}
 	} while(SDL_PollEvent(&event));
 }
@@ -91,13 +92,13 @@ extern void _start()
     #ifdef DEBUG
 	if( runtimePOS == -1 )
     {
-        printf( "%s is not a valid glsl program variable!\n", "runtime" );
+        printf( "%s is not a valid glsl program variable!\n", VAR_RUNTIME );
     }
 	#endif
 
 	for(;;)
 	{
-		handleEvents();
+		handleEvents(window);
 		#ifdef RUNTIME
 		draw(window,&runtimePOS);
 		#else
