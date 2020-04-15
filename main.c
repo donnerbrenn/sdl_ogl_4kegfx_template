@@ -6,7 +6,7 @@
 
 
 #define WIDTH 2560	
-#define HEIGHT 1440
+#define HEIGHT 1300
 // #define DEBUG
 // #define RUNTIME
 // #define DESPERATE
@@ -41,7 +41,11 @@ extern void _start()
 	asm ("sub $8, %rsp\n");
 	// static GLuint pf[2];
 	SDL_Init(SDL_INIT_EVERYTHING);
+	#ifdef DEBUG
+	const SDL_Window *window=SDL_CreateWindow("DEBUG VERSION",0,0,WIDTH,HEIGHT,SDL_WINDOW_OPENGL);
+	#else
 	const SDL_Window *window=SDL_CreateWindow(NULL,0,0,WIDTH,HEIGHT,SDL_WINDOW_OPENGL);
+	#endif
 	SDL_GL_CreateContext(window);
 	const GLuint f = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(f, 1, &shader_frag, NULL);

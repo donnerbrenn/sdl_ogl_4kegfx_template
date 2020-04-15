@@ -46,8 +46,6 @@ LDFLAGS+=-Wl,--spare-dynamic-tags=4
 # CFLAGS+= -lc -DDEBUG
 LDFLAGS+=-T linker.ld
 
-
-
 default: all
 
 shader.h: $(SHADERPATH)/$(SHADER)
