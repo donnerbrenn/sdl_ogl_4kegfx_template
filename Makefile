@@ -43,8 +43,8 @@ LDFLAGS+=-Wl,-z,noseparate-code
 LDFLAGS+=-Wl,--spare-dynamic-tags=4 
 
 # Activate Debug mode here
-# CFLAGS+= -lc -DDEBUG
-LDFLAGS+=-T linker.ld
+CFLAGS+= -lc -DDEBUG
+# LDFLAGS+=-T linker.ld
 
 default: all
 

@@ -1,8 +1,7 @@
-#version 460
-
+#version 400
 uniform float runtime[2];
+float  detail=10000.;
 float iTime=runtime[0];
-float detail=10000;
 out vec3 color;
 
 // vec3 translate(vec3 p, vec3 v)
@@ -84,10 +83,9 @@ float sdRoundBox( vec3 p, vec3 b, float r )
 //   return length(vec3(q.x,q.y-s+k,q.z-k)); 
 // }
 
-float cross(vec3 p, vec2 s)
+float cross(vec3 p, vec2 s, float r)
 {
-      return min(min(sdRoundBox(p,s.xyy,.0),sdRoundBox(p,s.yxy,.0)),sdRoundBox(p,s.yyx,.0));
-      // return min(final,sdRoundBox(p,s.yyx,.0));
+      return min(min(sdRoundBox(p,s.xyy,r),sdRoundBox(p,s.yxy,r)),sdRoundBox(p,s.yyx,r));
 }
 
 // float sdGyroid(vec3 p, float scale)
@@ -96,17 +94,15 @@ float cross(vec3 p, vec2 s)
 //     return dot(sin(p+iTime),cos(p.zxy+iTime))/scale;
 // }
 
-
-
 float map(vec3 p)
 {
       float ground=sdRoundBox(rotate(p+vec3(0,2.5,0),vec3(1.,0.,0.)),vec3(40,16,.1),.0);
       p=rotate(p,vec3(iTime*.5,iTime*.5,.5));
-      float final=cross(p,vec2(4.5,.98));
+      float final=cross(p,vec2(4.5,.89),.1);
       float box=sdRoundBox(p,vec3(1.),.25);
       final=max(box,-final);
-      final=min(final,sdRoundBox(p,vec3(0),.3));
-      final=mix(box,final,sin(iTime*2)*.5+.5);
+      final=min(final,sdRoundBox(rotate(p,vec3(vec2(sin(iTime*1.12)),.0)),vec3(.4),.0));
+      final=mix(box,final,sin(iTime)*.5+.5);
       return min(final,ground);
 }
 
@@ -136,8 +132,6 @@ float ambient_omni(vec3 p, vec3 l)
       return pow(d,32.)*1.5;
 }
 
-
-
 //SHADOW
 float softshadow(vec3 ro, vec3 rd, float mint, float maxt, float k)
 {
@@ -157,22 +151,23 @@ float softshadow(vec3 ro, vec3 rd, float mint, float maxt, float k)
     return res;
 }
 
-
 // MAINLOOP
 void main()
 {
       vec2 uv=gl_FragCoord.xy/vec2(runtime[1])-vec2(.5,.25);
-
-      vec3 ro=vec3(uv*5,-10.); 
+      vec3 ro=vec3(uv*2,-5.); 
       vec3 p=ro;
+      vec3 n;
       vec3 rd=normalize(vec3(uv,1.));
-      bool hit=false;
+      bool hit;
       float t;
       
       for(int i=0;i<500&&t<30.;i++)
       {
             t=length(ro-p);
             float d=map(p);
+
+            
             if(d<1./detail)
             {
                   hit=true;
@@ -180,9 +175,7 @@ void main()
             }
             p += rd*d;
       }
-      
-      
-      vec3 n=normal(p);
+      n=normal(p);
       if (hit)
       {
             vec3 lightColor;
@@ -194,7 +187,7 @@ void main()
             lightColor+=ambient_omni(p,l3)*diffuse_directional(n,l3,.225)+specular_directional(n,l3,rd,.725);
             color=lightColor*vec3(.1,.5,.1);
             vec3 pos = ro + t*rd;
-            color=mix(vec3(.0),color,softshadow(pos,normalize(l1),.01,length(t*rd),100.)*.25+.75);
+            color=mix(vec3(.0),color,softshadow(pos,normalize(l1),.01,length(t*rd),50.)*.25+.75);
       }
       color*=mix(color,vec3(1.,1.,1.),1-exp(-.1*pow(t,256.)));
       color-=t*.0125;
