@@ -1,7 +1,7 @@
 CC = cc-8
 
 SHADERPATH=shaders
-SHADER=flopine.frag
+SHADER=slimebox.frag
 
 LIBS=-lSDL2 -lGL #-lc
 
@@ -89,6 +89,9 @@ main: main.stripped
 	# ./tools/LZMA-Vizualizer/LzmaSpec $<.lzma
 	chmod +x $@
 	wc -c $@
+
+heatmap: main.xz
+	./tools/LZMA-Vizualizer/LzmaSpec $<
 
 main.cmix: main.stripped
 	cmix -c $< $@.cm

@@ -38,7 +38,7 @@ kernel is 64-bit and supports the 32-bit emulation layer.
 
 ```
 nasm -fbin -o$out vondehi.asm [-DUSE_GZIP] [-DTAG="j0!"] [-DNO_UBUNTU_COMPAT] \
-    [-DUSE_VFORK] [-DNO_CHEATING]
+    [-DUSE_VFORK] [-DNO_CHEATING] [-DWANT_ARGV]
 cat $out $intro_compressed > $final
 ```
 
@@ -63,6 +63,8 @@ brute-forces all compression parameters to find the optimal binary.
 * `NO_CHEATING` (default off): don't assume file descriptor numbers and
   properly pass arguments and environment variable to the payload. You need
   this if you're running on Wayland. Costs 5 bytes.
+* `WANT_ARGV` (default off): properly pass argv to the payload binary if
+  `NO_CHEATING` is enabled. Costs 3 or so bytes.
 
 ## How to debug it if it doesn't work
 

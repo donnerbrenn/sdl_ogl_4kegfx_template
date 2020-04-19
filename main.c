@@ -5,7 +5,7 @@
 #include "shader.h"
 
 
-#define WIDTH 2560	
+#define WIDTH 2560
 #define HEIGHT 1300
 // #define DEBUG
 // #define RUNTIME
@@ -13,8 +13,8 @@
 
 static void draw(SDL_Window *window, GLint *runtimePOS)
 {
-	GLfloat runtime[3]={SDL_GetTicks()*.001f,WIDTH,HEIGHT};
-	glUniform1fv(*runtimePOS,3,&runtime);
+	GLfloat runtime[2]={SDL_GetTicks()*.001f,WIDTH};
+	glUniform1fv(*runtimePOS,2,&runtime);
 	glRecti(-1,-1,1,1);
 	SDL_GL_SwapWindow(window);
 }

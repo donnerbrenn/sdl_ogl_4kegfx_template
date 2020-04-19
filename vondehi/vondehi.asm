@@ -108,7 +108,11 @@ _parent.2:
 phdr.endm2:
 phdr.end equ phdr.endm2 + 2
 	 lea ecx, [ebp+__strempty-__self+EBP_bias] ; p_align2..3, ...
+%ifdef WANT_ARGV
+	 lea edx, [esp+0x18]
+%else
 	xchg edx, esp
+%endif
 %else
 	 mov bl, 3				; p_align1..2
 phdr.endm1:
