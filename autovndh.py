@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# autovndh python 3 script by porocyon of K2 - Slightly optimized to to optimize nice value too.
+
 from __future__ import print_function
 
 import argparse
