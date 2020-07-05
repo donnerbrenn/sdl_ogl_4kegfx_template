@@ -1,4 +1,4 @@
-uniform float runtime[3];
+uniform vec2 iResolution;
 
 void main()
 {

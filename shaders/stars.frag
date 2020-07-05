@@ -1,5 +1,6 @@
-uniform float runtime[3];
-vec2 v2Resolution = vec2(runtime[1],runtime[2]);
+uniform float iTime;
+uniform vec2 iResolution;
+
 vec3 color;
  
 float hash21(vec2 p) 
@@ -15,10 +16,10 @@ mat2 rotate(float a)
 
 void main(void) 
 {
-  vec2 uv = (2 * gl_FragCoord.xy - v2Resolution) / v2Resolution.y + vec2(1. + 2 * cos(runtime[0] / 2), 2 * sin(runtime[0] / 10)) * .5 *rotate(runtime[0] / 10);
+  vec2 uv = (2 * gl_FragCoord.xy - iResolution) / iResolution.y + vec2(1. + 2 * cos(iTime / 2), 2 * sin(iTime / 10)) * .5 *rotate(iTime / 10);
   for (int i = 0; i < 5; i ++) 
   {
-    float z = fract((i*.2) + runtime[0] / 10);
+    float z = fract((i*.2) + iTime / 10);
     float fade = smoothstep(.0, .5, z) * smoothstep(1., .8, z);
     vec2 fbmp=uv;
     float fbms;
@@ -43,7 +44,7 @@ void main(void)
     vec2 layeriv = floor(layeruv);
     vec2 layergv = fract(layeruv) - .5;
     vec2 layerr = (sin(vec2(hash21(layeriv), hash21(layeriv + hash21(layeriv))) * 25.)*.3);
-    color += mix(vec3(0, 0, 1), vec3(1, .4, 0), mix(0, 1, z)) * (1. - smoothstep( .3 * hash21(layeriv),  .3 * hash21(layeriv) + .05, length(layergv - layerr))) * (1. / dot((layerr - layergv) * 25, (layerr - layergv) * 25)) *  (.7 * hash21(layeriv)) * fade + mix(.8 * sin(runtime[0] / 5) * vec3(.5, .2, 0), vec3(0), length(.5 + uv / 2));
+    color += mix(vec3(0, 0, 1), vec3(1, .4, 0), mix(0, 1, z)) * (1. - smoothstep( .3 * hash21(layeriv),  .3 * hash21(layeriv) + .05, length(layergv - layerr))) * (1. / dot((layerr - layergv) * 25, (layerr - layergv) * 25)) *  (.7 * hash21(layeriv)) * fade + mix(.8 * sin(iTime / 5) * vec3(.5, .2, 0), vec3(0), length(.5 + uv / 2));
   }
   gl_FragColor.rgb=color;
 }
