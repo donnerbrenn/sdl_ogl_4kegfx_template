@@ -14,9 +14,9 @@ static void draw(SDL_Window *window, GLint *iResolutionPOS, GLint *iTimePOS)
 static void draw(SDL_Window *window, GLint *iResolutionPOS)
 #endif
 {
-	float time=SDL_GetTicks()*.001f;
 	glUniform2f(*iResolutionPOS,(float)WIDTH,(float)HEIGHT);
 	#ifdef VAR_ITIME
+	float time=SDL_GetTicks()*.001f;
 	glUniform1f(*iTimePOS,time);
 	#endif
 	glRecti(-1,-1,1,1);
