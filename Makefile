@@ -1,7 +1,7 @@
 CC = cc
 
 SHADERPATH=shaders
-SHADER=blackle.frag
+SHADER=competitionpro.frag
 
 LIBS=-lSDL2 -lGL -lc
 
@@ -34,36 +34,21 @@ shader.h: $(SHADERPATH)/$(SHADER)
 main.o: main.c shader.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-smol.asm: main.o
-	./smol/src/smol.py --det $(LIBS) $< $@
-
-smol.o: smol.asm
-	nasm -I smol/rt/ -f elf64 -o $@ $< -DALIGN_STACK -DUSE_INTERP -DUSE_DNLOAD_LOADER -DUSE_DT_DEBUG -DUNSAFE_DYNAMIC -DNO_START_ARG
-
-smol.elf: smol.o main.o
-	ld -T smol/ld/link.ld --oformat=binary -o $@ $^
-	wc -c $@
-
-main.xz: smol.elf
-	python3 ./tools/opt_lzma.py $< -o $@
+SMOLARGS= -fuse-interp -falign-stack -funsafe-dynamic -fuse-dt-debug -fno-start-arg --det
+smol.elf: main.o
+	python3 ./smol/smold.py --smolrt "smol/rt" --smolld "smol/ld" $(SMOLARGS) $(LIBS) $< $@
+	@stat --printf="$@: %s bytes\n" $@
 
 VNDH_FLAGS :=-l -v --vndh vondehi --vndh_unibin
 main: smol.elf
 	./autovndh.py $(VNDH_FLAGS) "$<" > "$@"
 	chmod +x $@
-	wc -c $@
+	@stat --printf="$@: %s bytes\n" $@
 
 heatmap: smol.elf
 	./autovndh.py $(VNDH_FLAGS) --nostub "$<" > "/tmp/$@"
 	./tools/LZMA-Vizualizer/LzmaSpec "/tmp/$@"
 	rm /tmp/$@
-
-main.cmix: smol.elf
-	cmix -c $< $@.cm
-	cat cmix/cmixdropper.sh $@.cm > $@
-	rm $@.cm
-	chmod +x $@
-	wc -c $@
 
 all: main
 
