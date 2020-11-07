@@ -1,6 +1,4 @@
 #version 460
-
-
 uniform vec2 iResolution;
 uniform float iTime;
 vec2 uv = (gl_FragCoord.xy-vec2(iResolution.x)*vec2(0.5,.28))/iResolution.x;
@@ -27,24 +25,16 @@ vec3 rotate(vec3 p,vec3 t)
       return m*p;
 }
 
-
 float map(vec3 p)
 {
-
-
-    
-    // p.x+=sin(iTime)*2;
-    // p.y+=cos(iTime)*2;
-    
     p=rotate(p,vec3(iTime*.1));
     p=mod(p,.5)-.25;
-    // p.z+=iTime;
     return length(p)-.1;
 }
 
-float lightRender(vec3 n,vec3 l, vec3 v, float strength)
-{
-      return ((dot(n,normalize(l))*.5+.5)+pow(max(dot(v,reflect(normalize(l),n)),0),2))*strength;
+float lightRender(vec3 n,vec3 ld, vec3 v, float strength)
+{   
+      return ((.33+max(dot(n,ld),0)+pow(max(dot(rd, reflect(ld,n)), .0), 8))*strength);
 }
 
 void main()
@@ -59,9 +49,9 @@ void main()
     }
     if(hit)
     {
-        mat3 k = mat3(p,p,p) - mat3(0.001);
+        mat3 k = mat3(p,p,p) - mat3(.001);
         vec3 n=normalize(map(p) - vec3( map(k[0]),map(k[1]),map(k[2]) ) );
-        color=(sin(p)*0.5+0.5)*lightRender(n,vec3(-1,-1,0),ro,.23)*2./distance(ro,p);
+        color=(sin(p)*0.5+0.5)*lightRender(n,vec3(-1,-1,0),ro,.23)*.5;
     }
     color=sqrt(color);
 }

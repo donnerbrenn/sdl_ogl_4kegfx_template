@@ -58,31 +58,31 @@ vec4 sdRoundBox( vec3 p, vec3 b, float r, vec3 color)
   return vec4(color,length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - r);
 }
 
-vec4 sdCross(vec3 p, vec2 s, float r, vec3 color)
-{
-      return _min(_min(sdRoundBox(p,s.xyy,r,color),sdRoundBox(p,s.yxy,r,color)),sdRoundBox(p,s.yyx,r,color));
-}
+// vec4 sdCross(vec3 p, vec2 s, float r, vec3 color)
+// {
+//       return _min(_min(sdRoundBox(p,s.xyy,r,color),sdRoundBox(p,s.yxy,r,color)),sdRoundBox(p,s.yyx,r,color));
+// }
 
 vec4 map(vec3 p)
 {
       p.y+=2.;
 
 //PILES
-// vec3 pillarP=p;
+vec3 pillarP=p;
 
 // FIELD OF PILLARS
-      // pillarP=rotate(pillarP,vec3(3.14/4,0.,0.));
-      // pillarP.xy=mod(pillarP.xy,4.)-2.;
-      // vec4 piles=sdRoundBox(pillarP,vec3(1,1,2),.2,vec3(1,0,0)); // sdSphere(pillarP,1.,vec3(1,0,0));
-      // vec4 ground=sdRoundBox(rotate(p+vec3(0,2.5,0),vec3(3.14/4,0.,0.)),vec3(400,600,.01),.0,vec3(.6,.6,.6));
-      // return _min(piles,ground);
+      pillarP=rotate(pillarP,vec3(3.14/4,0.,0.));
+      pillarP.xy=mod(pillarP.xy,4.)-2.;
+      vec4 piles=sdRoundBox(pillarP,vec3(1,1,2),.2,vec3(1,0,0)); // sdSphere(pillarP,1.,vec3(1,0,0));
+      vec4 ground=sdRoundBox(rotate(p+vec3(0,2.5,0),vec3(3.14/4,0.,0.)),vec3(400,600,.01),.0,vec3(.6,.6,.6));
+      return _min(piles,ground);
 
 
 //SIMPLE TEST SCENE
       // vec4 ground=sdRoundBox(rotate(p+vec3(0,2.5,0),vec3(1.,0.,0.)),vec3(40,16,.1),.0,vec3(.26,.26,.26));
       // vec4 sphere=sdRoundBox(p,vec3(0),1.,vec3(1));
       // return _min(sphere,ground);
-LIVE
+
 
 
 //SIMPLE TEST SCENE 2 CUBE, SPHERE, CUBE
@@ -117,14 +117,14 @@ LIVE
       
       
 // CUBETHING WITH A BALL IN THE MIDDLE
-      vec4 ground=sdRoundBox(rotate(p+vec3(0,2.5,0),vec3(1.,0.,0.)),vec3(40,40,.1),.0,vec3(.2,.2,.2));
-      p=rotate(p,vec3(iTime*.5,iTime*.5,.5));
-      vec4 final=sdCross(p,vec2(4.5,.89),.21,vec3(.1,.1,.75));
-      vec4 box=sdRoundBox(p,vec3(1.),.25,vec3(.1,.75,.1));
-      final=_max(box,final, true);
-      final=_min(final,sdRoundBox(p,vec3(.0),.4,vec3(.7,.0,.0)));
-      final=mix(box,final,sin(iTime)*.5+.5);
-      return _min(final,ground);
+      // vec4 ground=sdRoundBox(rotate(p+vec3(0,2.5,0),vec3(1.,0.,0.)),vec3(40,40,.1),.0,vec3(.2,.2,.2));
+      // p=rotate(p,vec3(iTime*.5,iTime*.5,.5));
+      // vec4 final=sdCross(p,vec2(4.5,.89),.21,vec3(.1,.1,.75));
+      // vec4 box=sdRoundBox(p,vec3(1.),.25,vec3(.1,.75,.1));
+      // final=_max(box,final, true);
+      // final=_min(final,sdRoundBox(p,vec3(.0),.4,vec3(.7,.0,.0)));
+      // final=mix(box,final,sin(iTime)*.5+.5);
+      // return _min(final,ground);
 }
 
 vec3 normal(vec3 p) 
@@ -223,4 +223,6 @@ void main()
       //show raymap
       // color*=0;
       // color.r=length(1./length(res.RP));
+      color *= exp2(-0.4*(distance(ro,res.RP)*.3));
+      color=pow(color,vec3(.4545));
 }

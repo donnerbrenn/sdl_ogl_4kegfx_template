@@ -1,7 +1,7 @@
 #version 400
 
 uniform float iTime;
-uniform vec2 iResolution;
+vec2 iResolution=vec2(1920,1080);
 vec2 uv= gl_FragCoord.xy/iResolution.xy-.5;
 
 

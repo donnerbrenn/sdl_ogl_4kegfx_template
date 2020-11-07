@@ -1,16 +1,17 @@
-#version 450
-uniform vec2 iResolution;
-vec2 uv = ((gl_FragCoord.xy.xy/iResolution)*2-1)*vec2(1,iResolution.y/iResolution.x);
+#version 460
+vec4 iResolution=vec4(960,540,1.78,1.0);
+vec2 uv = (gl_FragCoord.xy/iResolution.xy-1)*vec2(iResolution.za)/2;
+
+float threshold=.0001;
 out vec3 color;
-float threshold=.001;
-vec3 ro=vec3(0.,0.,-6.);
+vec3 ro=vec3(0,0,-6);
 vec3 rd=normalize(vec3(uv,1));
-vec3 p=ro;
+vec3 p=ro,p2;
 vec3 lp[3];
 vec3 lc[3];
 
 #define B vec3(-.015)
-#define R vec3(.4,.0,.0)
+#define R vec3(.4,-.015,-.015)
 #define G vec3(.03)
 
 float hash21(vec2 p) 
@@ -50,24 +51,21 @@ MA sdCappedCone( vec3 p, float h, float r1, float r2, float r3, vec3 col )
   vec2 ca = vec2(q.x-min(q.x,(q.y<0.0)?r1:r2), abs(q.y)-h);
   vec2 cb = q - k1 + k2*clamp( dot(k1-q,k2)/dot2(k2), 0.0, 1.0 );
   float s = (cb.x<0.0 && ca.y<0.0) ? -1.0 : 1.0;
-  float d = s*sqrt( min(dot2(ca),dot2(cb)))-r3;
-  return MA(d,col,false);
+  return MA(s*sqrt( min(dot2(ca),dot2(cb)))-r3,col,false);
 }
 
 //by iq
 MA sdRoundBox( vec3 p, vec3 b, float r, vec3 color)
 {
   vec3 q = abs(p) - b;
-  float d= length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - r;
-  return MA(d,color,false);
+  return MA(length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - r,color,false);
 }
 
 
 //by iq
 MA sdPlane( vec3 p, vec3 n, float h, vec3 color)
 {
-  float d=dot(p,n) + h;
-  return MA(d,color,false);
+  return MA(dot(p,n) + h,color,false);
 }
 
 MA _min(MA a, MA b)
@@ -75,15 +73,11 @@ MA _min(MA a, MA b)
     return a.d<b.d?a:b;
 }
 
-MA _max(MA a, MA b)
-{
-    return a.d>b.d?a:b;
-}
 
-float softmin(float f1, float f2, float val)
+float softmin(float f1, float f2, float balance)
 {
-      float e = max(val - abs(f1 - f2), 0.0);
-      return min(f1, f2) - e*e*0.25 / val;     
+      float e = pow(max(balance - abs(f1 - f2), 0.0),2)*.25;
+      return min(f1, f2) - e / balance;
 }
 
 MA map(vec3 p)
@@ -96,13 +90,11 @@ MA map(vec3 p)
     MA ring1 = sdCappedCone(p+vec3(0,.6,0),.05,.3,.3,.05,B);
     MA ring2 = sdCappedCone(p+vec3(0,1.,0),.3,.6,.6,.05,B);
     MA base1 = sdRoundBox(p+vec3(0,1.4,0),vec3(.9,.15,.9),.1,B);
-    MA bbase1 = sdCappedCone(p+vec3(1.75,1.34,.75),.05,.55,.45,.02,R);
-    bbase1.d-=.0005;
-    MA bbase2 = sdCappedCone(p+vec3(1.75,1.34,-.75),.05,.55,.45,.02,R);
-    bbase1.d-=.0005;
-    MA button1 = sdCappedCone(p+vec3(1.75,1.27,.75),.05,.4,.4,.015,R);
-    MA button2 = sdCappedCone(p+vec3(1.75,1.27,-.75),.05,.4,.4,.015,R);
     MA base2=sdRoundBox(p+vec3(.5,1.85,0),vec3(1.55,.0,1.05),.45,B);
+    MA bbase1 = sdCappedCone(p+vec3(1.75,1.34,.75),.05,.55,.45,.02,R);
+    MA bbase2 = sdCappedCone(p+vec3(1.75,1.34,-.75),.05,.55,.45,.02,R);
+    bbase2.d-=.0005; bbase1.d-=.0005;
+    MA buttons = _min(sdCappedCone(p+vec3(1.75,1.27,.75),.05,.4,.4,.015,R),sdCappedCone(p+vec3(1.75,1.27,-.75),.05,.4,.4,.015,R));
     MA cable=sdRoundBox(p+vec3(10,sin(p.x*1.8)*.1+2.05,sin((p.x*.0)+sin(p.x*.7))+.75),vec3(8,0,0),.1,B);
     MA ball  = sdRoundBox(p+vec3(.0,-1.,.0),vec3(0),.5,R);
     vec3 mp=mod(p,.0001)-.00005;
@@ -118,8 +110,7 @@ MA map(vec3 p)
     ball = _min(ball,ringbase);
     ball = _min(ball,bbase1);
     ball = _min(ball,bbase2);
-    ball = _min(ball,button1);
-    ball = _min(ball,button2);
+    ball = _min(ball,buttons);
     ball = _min(ball,plane);
     ball = _min(ball,cable);
     return ball;
@@ -166,17 +157,18 @@ float softshadow( in vec3 ro, in vec3 rd, float mint, float maxt, float k )
 vec3 calcLight(vec3 p, vec3 n, vec3 color, float power)
 {
     vec3 oc;
-    float diffuse[4];
-    float specular[4];
+    float diffuse;
+    float specular;
 
     for(int i=0;i<3;i++)
     {
 
-        diffuse[i]=max(.0,dot(reflect(lp[i],n),rd));
+        diffuse=max(.0,dot(reflect(lp[i],n),rd));
 
-        specular[i]=pow(diffuse[i],64);
+        //specular[i]=pow(diffuse[i],64);
+        specular=pow(max(dot(rd, reflect(lp[i],n)), .0), 42);
         float s=softshadow(p,lp[i],.1,20.,25);
-        oc+=(diffuse[i]*power*.333+specular[i]*power*3)*lc[i]*s;
+        oc+=(diffuse*power*.333+specular*power*3)*lc[i]*s;
     }
     return color+oc;
 }
@@ -192,23 +184,23 @@ void main()
     lc[1]=mlc.xyx;
     lc[2]=mlc.yxx*.75;
 
-    MA res=march(ro,rd,20);
+    MA res=march(ro,rd,100);
     vec3 n=normal(p);
     if(res.hit)
     {
         color=res.col;
         color=calcLight(p,n,res.col,.1);
+        p2=p;
         if(res.col==B)
         {
             p-=rd*.01;
             rd=normalize(reflect(rd,n));   
-            res=march(p,rd,2.5);
+            res=march(p,rd,10);
             if(res.hit)
             {
                 color=mix(color,calcLight(p,normal(p),res.col,.1),.1);
             }
         }
     }
-    color*=1.-(distance(ro,p)*.05);
-    color=pow(color,vec3(.4545));
+    color=pow((((color*exp2(-2.5*(length(p2)*.25)))*2-1)*1.005)*.5+.5,vec3(.4545));
 }
