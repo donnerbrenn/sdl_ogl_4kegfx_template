@@ -39,7 +39,7 @@ smol.elf: main.o
 	python3 ./smol/smold.py --smolrt "smol/rt" --smolld "smol/ld" $(SMOLARGS) $(LIBS) $< $@
 	@stat --printf="$@: %s bytes\n" $@
 
-VNDH_FLAGS :=-l -v --vndh vondehi --vndh_unibin
+VNDH_FLAGS :=-l -v --vndh vondehi #--vndh_unibin
 main: smol.elf
 	./autovndh.py $(VNDH_FLAGS) "$<" > "$@"
 	chmod +x $@
