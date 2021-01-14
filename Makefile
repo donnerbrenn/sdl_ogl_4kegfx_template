@@ -1,7 +1,7 @@
 CC = cc
 
 SHADERPATH=shaders
-SHADER=competitionpro.frag
+SHADER=basic.frag
 
 LIBS=-lSDL2 -lGL -lc
 
