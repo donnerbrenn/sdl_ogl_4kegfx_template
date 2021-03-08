@@ -1,4 +1,4 @@
-uniform vec2 iResolution;
+vec2 iResolution=vec2(1920,1080);
 
 void main()
 {

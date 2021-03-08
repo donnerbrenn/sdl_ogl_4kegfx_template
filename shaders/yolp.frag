@@ -2,5 +2,5 @@ uniform float iTime;
 
 void main()
 {
-      gl_FragColor=glFragCoord*sin(itime);
+      gl_FragColor=sin(gl_FragCoord*.001+iTime);
 }

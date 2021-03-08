@@ -1,13 +1,14 @@
 #version 460
 
-uniform float iTime;
-uniform vec2 iResolution;
+uniform int iTime;
+uniform vec2 iResolution=vec2(1920,1080);
 out vec3 color;
 float approx=.001;
 float renderDist=15;
 float maxIter=1000;
 
 vec3 ro=vec3(0);
+float t;
 
 
 
@@ -31,10 +32,10 @@ float sdPlane(vec3 p, vec4 n)
 }
 
 
-float sdSphere(vec3 p, float r)
-{
-    return length(p)-r;
-}
+// float sdSphere(vec3 p, float r)
+// {
+//     return length(p)-r;
+// }
 
 
 float sdRoundbox( vec3 p, vec3 b, float r)
@@ -43,23 +44,23 @@ float sdRoundbox( vec3 p, vec3 b, float r)
   return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0) - r;
 }
 
-float hash21(vec2 p) {
-    p = fract(p * vec2(233.34, 851.74));
-    p += dot(p, p + 23.45);
-    return fract(p.x * p.y);
-}
+// float hash21(vec2 p) {
+//     p = fract(p * vec2(233.34, 851.74));
+//     p += dot(p, p + 23.45);
+//     return fract(p.x * p.y);
+// }
 
-vec2 hash22(vec2 p) {
-    float k = hash21(p);
-    return vec2(k, hash21(p + k));
-}
+// vec2 hash22(vec2 p) {
+//     float k = hash21(p);
+//     return vec2(k, hash21(p + k));
+// }
 
 
 float map(vec3 p)
 {
 
-    p.z+=iTime;
-    p=rotate(p,vec3(0,0,sin(iTime*1+p.z))*.25);
+    p.z+=t;
+    p=rotate(p,vec3(0,0,sin(t*1+p.z))*.25);
     float plane=sdPlane(p,vec4(0,3.14/4,0,.5));   
     p.xz=mod(p.xz,2)-1;
 
@@ -80,8 +81,8 @@ float lightRender(vec3 n,vec3 l, vec3 v, float strength)
 
 vec3 triplanarMap(vec3 p, vec3 n, float o)
 {
-//        p.z+=iTime;
-        p=rotate(p,vec3(0,0,sin(iTime+p.z))*.25);
+        // p.z+=t;
+        p=rotate(p,vec3(0,0,sin(t+p.z))*.25);
 
     // Take projections along 3 axes, sample texture values from each projection, and stack into a matrix
     mat3 triMapSamples = mat3(
@@ -96,6 +97,7 @@ vec3 triplanarMap(vec3 p, vec3 n, float o)
 
 void main()
 {
+    t=iTime*.001;
     vec2 uv=((gl_FragCoord.xy/iResolution)*2-1.)*vec2(1,iResolution.y/iResolution.x);
     
     vec3 rd=normalize(vec3(uv,1));
@@ -112,11 +114,12 @@ void main()
     if(d<approx)
     {
         vec3 n=normal(p);
-        color=triplanarMap(p+vec3(0,0,iTime),n,.5);
+        color=triplanarMap(p+vec3(0,0,t),n,.5);
         color*=lightRender(n,vec3(10),rd,.5);
         color*=pow((1.-distance(ro,p)/renderDist),2);
     }
-    color=sqrt(color);
+    color=pow((((color*exp2(-1.5*(d*.25)))*2-1)*1.005)*.5+.5,vec3(.4545));
+    // color=sqrt(color);
 //    color.yz=vec2(0);
 //    color.r+=iterations*(1/maxIter);
 //    if(color.r==1.) color.g=1;

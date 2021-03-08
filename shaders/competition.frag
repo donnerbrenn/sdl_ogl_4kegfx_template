@@ -1,4 +1,4 @@
-#version 460
+#version 400
 vec4 iResolution=vec4(960,540,1.78,1.0);
 vec2 uv = (gl_FragCoord.xy/iResolution.xy-1)*vec2(iResolution.za)/2;
 
