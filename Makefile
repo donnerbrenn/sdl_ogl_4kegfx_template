@@ -1,9 +1,9 @@
 SHADERPATH=shaders
-SHADER=white.frag
+SHADER=tixy.frag
 
 CC=gcc-8
 USELTO=false
-ALIGNSTACK=false
+ALIGNSTACK=true
 #dlfixup or dnload
 SMOLLOADER=dlfixup
 
